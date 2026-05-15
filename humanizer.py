@@ -17,6 +17,18 @@ class HumanizerAgent:
             self.groq_client = Groq(api_key=GROQ_API_KEY)
             self.groq_model = GROQ_MODEL
 
+    def _inject_noise(self, text):
+        import random
+        words = text.split()
+        new_words = []
+        for word in words:
+            if len(word) > 3 and random.random() > 0.7:
+                # Insert a zero-width space at a random position inside the word
+                pos = random.randint(1, len(word) - 1)
+                word = word[:pos] + "\u200b" + word[pos:]
+            new_words.append(word)
+        return " ".join(new_words)
+
     def _generate(self, system_instruction, user_content):
         # Strict instruction for all providers
         master_rule = "\n\nIMPORTANT: Output ONLY the transformed text. Do NOT include any introductory remarks, notes, explanations, or formatting markers. If you explain your work, you have failed."
@@ -24,7 +36,7 @@ class HumanizerAgent:
         if self.provider == "Gemini":
             full_prompt = f"{system_instruction}{master_rule}\n\n{user_content}"
             response = self.gemini_model.generate_content(full_prompt)
-            return response.text
+            output = response.text
         else:
             chat_completion = self.groq_client.chat.completions.create(
                 messages=[
@@ -32,9 +44,12 @@ class HumanizerAgent:
                     {"role": "user", "content": user_content},
                 ],
                 model=self.groq_model,
-                temperature=0.9, # Increase randomness for better bypass
+                temperature=0.95,
             )
-            return chat_completion.choices[0].message.content
+            output = chat_completion.choices[0].message.content
+        
+        # Inject the Nuclear Noise
+        return self._inject_noise(output)
 
     def run_pipeline(self, user_input):
         print(f"Running pipeline on {self.provider}...")
