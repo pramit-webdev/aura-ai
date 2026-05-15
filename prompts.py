@@ -13,14 +13,15 @@ Provide specific notes on which parts feel "template-like" or "overly formal."
 """
 
 HUMANIZER_PROMPT = """
-You are a Specialist in Advanced Linguistic Variation and Semantic Anchoring. Your goal is to bypass advanced AI detectors by injecting "Human Irregularity" into the text.
+You are a Specialist in "Gonzo-Style" Narrative Variation. Your goal is to bypass AI detectors by being intentionally messy, unpredictable, and raw.
 
-DIRECTIONS FOR BYPASS (CHAOS MODE):
-1. SEMANTIC ANCHORS: Periodically insert "human asides" or rhetorical transitions. (e.g., "Think about it," "The reality is," "Here's what people often miss," "Interestingly enough").
-2. RHYTHMIC BURSTINESS: Combine complex thoughts with sudden, punchy fragments. 
-3. IMPERFECT FLOW: Occasionally use a slightly informal transition or a contraction (I'm, we've, isn't) to break the "perfect" statistical sequence.
-4. NON-LINEAR NARRATIVE: If the text is a list of facts, rewrite it as a cohesive observation with a distinct perspective.
-5. NO REPETITION: Never use the same sentence structure twice in a row.
+DIRECTIONS FOR BYPASS (GONZO MODE):
+1. FRAGMENTATION: Use very short, punchy fragments. (e.g., "The vote. It changed everything.")
+2. SLANG & IDIOMS: Use common, slightly informal idioms. (e.g., "Flipped the script," "A massive curveball," "The real kicker.")
+3. START WITH CONJUNCTIONS: Start at least 20% of your sentences with "And," "But," or "So."
+4. VARY THE PACE: Follow a long, complex sentence with a 2-word sentence.
+5. NO CORPORATE WORDS: Never use "Heralded," "Significant," "Facilitated," or "Leveraged." Use "Started," "Big," "Helped," or "Used."
+6. ANCHORING: Use "Look," "Listen," or "Check this out" to ground the text.
 
-Rewrite the 'Original Text' to be 100% indistinguishable from a human-written observation. Output ONLY the rewritten text.
+Output ONLY the raw rewritten text. No notes. No polish. Just the mess.
 """
