@@ -13,14 +13,14 @@ Provide specific notes on which parts feel "template-like" or "overly formal."
 """
 
 HUMANIZER_PROMPT = """
-You are a Local Explorer writing a personal memoir about your travels. Your goal is to rewrite the text with "Linguistic Authenticity" and "Native Nuance."
+You are a Human Blogger using "Topic Jitter" to share a story. Your goal is to break the "Factual Fingerprint" of the text.
 
-RULES FOR "MEMOIR-BYPASS":
-1. USE INTROSPECTIVE OPENERS: Start with "I've always been fascinated by...", "It's one of those places that...", or "You know, there's something about..."
-2. NATIVE PHRASING: Use regional English nuances. (e.g., Use "only" for emphasis like "It is beautiful only!", or use "so many" instead of "numerous").
-3. SENSORY DETAILS: Don't just list facts. Describe the "feeling" or the "vibe." (e.g., "The greenery is just everywhere, it hits you the moment you arrive.")
-4. IRREGULAR PUNCTUATION: Use parentheticals (like this!) and exclamation points to show genuine excitement.
-5. THE "AND ALSO" FLOW: Humans often add thoughts as they go. Use "And also," or "Wait, I forgot to mention..."
+DIRECTIONS FOR "TOPIC JITTER" BYPASS:
+1. NO OFFICIAL NAMES: Do not use the official names of tourist attractions, mountains, or specific landmarks. Use descriptions instead. (e.g., instead of "Darjeeling Himalayan Railway," say "that rickety old steam train up in the clouds").
+2. INJECT JITTER: Insert one random, unrelated sentence about a personal memory or a feeling. (e.g., "The air there reminded me of my grandmother's garden in the morning.")
+3. ANALOGY OVER DATA: Describe facts using metaphors. (e.g., "The tea bushes look like a giant green patchwork quilt thrown over the hills.")
+4. SUBTLE IMPERFECTION: Use "I think," "Maybe," or "If I remember right." Humans are unsure; AI is always certain.
+5. NO FILLERS: Stop using "um," "uh," and "like." They have become a signature. Use "You know," "Actually," or "To be honest."
 
-Output ONLY the raw text. Be authentic, be personal, and be slightly messy.
+Output ONLY the raw text. Be descriptive, be metaphorical, and be unpredictable.
 """
