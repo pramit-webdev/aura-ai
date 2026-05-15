@@ -146,25 +146,32 @@ if st.session_state.results:
         # Use our custom copy button
         copy_button(st.session_state.results['humanized'])
         
-        st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized.txt")
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Live SOTA Audit
+        from auditor import SOTAAuditor
+        auditor = SOTAAuditor()
+        audit_results = auditor.audit(st.session_state.results['humanized'])
         
-        # New Metrics Analysis
-        st.markdown("### 🧬 Linguistic Authenticity")
-        m_col1, m_col2, m_col3 = st.columns(3)
+        st.markdown(f"### 🛡️ Live SOTA Audit")
         
-        res_text = st.session_state.results["humanized"]
-        clean_text = res_text.replace("\u200b", "")
-        grade = textstat.automated_readability_index(clean_text)
-        words = clean_text.split()
-        diversity = len(set(words)) / len(words) * 100 if words else 0
+        # Color-coded detection probability
+        prob = audit_results['detection_probability']
+        color = "red" if prob > 70 else "orange" if prob > 40 else "green"
         
+        st.markdown(f"""
+        <div style='background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 15px; border-left: 5px solid {color};'>
+            <small style='color: #9ca3af;'>DETECTION LIKELIHOOD</small><br>
+            <h1 style='color: {color}; margin: 0;'>{prob:.0f}%</h1>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        m_col1, m_col2 = st.columns(2)
         with m_col1:
-            st.markdown(f"<div class='metric-box'><small>BYPASS PROBABILITY</small><br><h2>98%</h2></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-box'><small>BURSTINESS</small><br><h2>{audit_results['burstiness']:.0f}</h2></div>", unsafe_allow_html=True)
         with m_col2:
-            st.markdown(f"<div class='metric-box'><small>LINGUISTIC CHAOS</small><br><h2>{min(diversity + 20, 100):.0f}</h2></div>", unsafe_allow_html=True)
-        with m_col3:
-            st.markdown(f"<div class='metric-box'><small>READABILITY GRADE</small><br><h2>{grade:.0f}</h2></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-box'><small>COMPLEXITY</small><br><h2>{audit_results['complexity']:.0f}</h2></div>", unsafe_allow_html=True)
+        
+        if audit_results['markers_found']:
+            st.warning(f"⚠️ AI Markers Detected: {', '.join(audit_results['markers_found'])}")
 
-        with st.expander("🔍 Internal Linguistic Audit"):
+        with st.expander("🔍 Detailed Linguistic Breakdown"):
             st.write(st.session_state.results["criticism"])

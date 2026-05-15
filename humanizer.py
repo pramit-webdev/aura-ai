@@ -8,48 +8,35 @@ class HumanizerAgent:
         self.groq_client = Groq(api_key=GROQ_API_KEY)
         self.model = "llama-3.3-70b-versatile"
 
-    def _generate(self, prompt):
-        chat_completion = self.groq_client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}],
-            model=self.model,
-            temperature=0.8,
-        )
-        return chat_completion.choices[0].message.content
-
-    def _sabotage(self, text):
-        # Invisible Character Injection
-        new_text = ""
-        for char in text:
-            if char == 'o' and random.random() > 0.9:
-                new_text += "\u03BF" 
-            elif char == 'a' and random.random() > 0.9:
-                new_text += "\u0430" 
-            else:
-                new_text += char
-        return new_text
-
     def run_pipeline(self, user_input):
-        print("Running Multi-Hop Rebirth...")
+        print("Running Voice-Note Protocol...")
         
-        # Hop 1: English -> Japanese (Structural Reset)
-        hop1 = self._generate(f"Translate this text to Japanese. Output ONLY the Japanese text: {user_input}")
+        # The Voice-Note Prompt
+        voice_prompt = """
+        Rewrite the following text as if you are recording a messy, casual voice note to a friend while walking.
         
-        # Hop 2: Japanese -> Hindi (Nuance Reset)
-        hop2 = self._generate(f"Translate this Japanese text to Hindi. Output ONLY the Hindi text: {hop1}")
+        RULES FOR "SPEECH-BYPASS":
+        1. HESITATION: Use "um," "uh," and "like" naturally.
+        2. STUMBLES: Occasionally repeat a word or correct yourself (e.g., "It's, uh, it's actually...").
+        3. TYPOS: Purposefully include 2 subtle typos in the final text (e.g., "beautifull" or "goverment").
+        4. NO POLISH: Start mid-thought. Don't use a formal intro.
+        5. FACT RETENTION: Mention the facts (Kolkata, history, etc.) but sound like you're trying to remember them on the fly.
         
-        # Hop 3: Hindi -> English (The Re-birth)
-        # We tell the model to be 'conversational' during the final hop
-        final_prompt = f"""Translate this Hindi text back to English. 
-        Use a very natural, conversational, and slightly messy tone. 
-        Output ONLY the English text: {hop2}"""
+        Output ONLY the raw text. No explanations.
+        """
         
-        reborn_text = self._generate(final_prompt)
-        
-        # Final Sabotage
-        final_output = self._sabotage(reborn_text)
+        chat_completion = self.groq_client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": voice_prompt},
+                {"role": "user", "content": user_input},
+            ],
+            model=self.model,
+            temperature=0.9,
+        )
+        output = chat_completion.choices[0].message.content
         
         return {
             "draft": user_input,
-            "criticism": "Multi-Hop Linguistic Rebirth Complete (EN -> JP -> HI -> EN).",
-            "humanized": final_output.strip()
+            "criticism": "Voice-Note Transcription Protocol Active.",
+            "humanized": output.strip()
         }
