@@ -7,8 +7,8 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # Default Models
-DEFAULT_GEN_MODEL = "models/gemini-1.5-flash"
-DEFAULT_HUMANIZER_MODEL = "models/gemini-1.5-pro" 
+DEFAULT_GEN_MODEL = "gemini-2.0-flash"
+DEFAULT_HUMANIZER_MODEL = "gemini-2.0-flash" # Using Flash for both to ensure availability
 
 # Detection Thresholds (Heuristic)
 BURSTINESS_THRESHOLD = 0.5  # Variance in sentence length
