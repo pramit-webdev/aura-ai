@@ -45,11 +45,15 @@ class SOTAAuditor:
         # Calculate final score with penalties
         human_score = (burstiness * 0.4) + (chaos * 0.6)
         
-        # APPLY CLICHE PENALTY (defined in linguistic chaos)
+        # APPLY CLICHE PENALTY
         ai_cliches = ['unwavering', 'testament', 'delve', 'innovative', 'pivotal', 'comprehensive', 'harnessing', 'tapestry']
         cliche_penalty = sum(15 for word in ai_cliches if word in text.lower())
         
-        detection_probability = max(0, min(100, (100 - human_score) + cliche_penalty))
+        # APPLY PERFECTION PENALTY (If it's too clean, it's a robot)
+        # If text is over 200 words and has 0 sentence fragments, it's suspicious
+        perfection_penalty = 20 if (len(text.split()) > 50 and all(len(s.split()) > 5 for s in sentences)) else 0
+        
+        detection_probability = max(0, min(100, (100 - human_score) + cliche_penalty + perfection_penalty))
         
         return {
             "detection_probability": round(detection_probability, 1),
