@@ -154,7 +154,15 @@ if st.session_state.results:
         
         # Action Buttons
         copy_button(st.session_state.results['humanized'])
-        st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized.txt")
+        
+        col_btn1, col_btn2 = st.columns(2)
+        with col_btn1:
+            st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized.txt")
+        with col_btn2:
+            if st.button("✅ This Passed Copyleaks"):
+                agent.save_to_archive(st.session_state.results['humanized'])
+                st.success("Added to Gold Standard Archive! Aura AI is now smarter.")
+        
         st.markdown("</div>", unsafe_allow_html=True)
         
         # Live SOTA Audit
