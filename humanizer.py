@@ -1,49 +1,46 @@
 import os
-import google.generativeai as genai
+import random
 from groq import Groq
-from config import GOOGLE_API_KEY, GROQ_API_KEY, DEFAULT_GEN_MODEL, GROQ_MODEL
-from prompts import DRAFTER_PROMPT, CRITIC_PROMPT, HUMANIZER_PROMPT
+from config import GROQ_API_KEY, GROQ_MODEL
+from prompts import HUMANIZER_PROMPT
 
 class HumanizerAgent:
     def __init__(self, provider="Groq"):
-        self.provider = provider
         self.groq_client = Groq(api_key=GROQ_API_KEY)
-        self.primary_model = "llama-3.3-70b-versatile"
-        self.scrambler_model = "llama-3.1-8b-instant" 
+        self.model = "llama-3.3-70b-versatile"
 
-    def _generate(self, model, system_instruction, user_content):
-        chat_completion = self.groq_client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": user_content},
-            ],
-            model=model,
-            temperature=0.85,
-        )
-        return chat_completion.choices[0].message.content
+    def _sabotage(self, text):
+        # The "Homoglyph" trick: Replace Latin 'o' with Greek 'ο' (U+03BF)
+        # This is invisible to humans but breaks AI tokenization
+        new_text = ""
+        for char in text:
+            if char == 'o' and random.random() > 0.8:
+                new_text += "\u03BF" # Greek micron
+            elif char == 'a' and random.random() > 0.8:
+                new_text += "\u0430" # Cyrillic 'a'
+            else:
+                new_text += char
+        return new_text
 
     def run_pipeline(self, user_input):
-        print(f"Running Dual-Pass Scrambling...")
+        print("Running Sabotage Pipeline...")
         
-        # Pass 1: Street-Level Rewrite (Llama 3.3)
-        pass1_output = self._generate(
-            self.primary_model,
-            HUMANIZER_PROMPT,
-            f"Rewrite this naturally:\n\n{user_input}"
+        # Aggressive Rewrite
+        chat_completion = self.groq_client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": HUMANIZER_PROMPT},
+                {"role": "user", "content": f"Rewrite this as a messy human blog post. Keep facts. NO AI WORDS: {user_input}"},
+            ],
+            model=self.model,
+            temperature=0.95,
         )
+        output = chat_completion.choices[0].message.content
         
-        # Pass 2: Signature Scrambling (Mixtral)
-        # We tell the second model to just 'clean up' the flow slightly while breaking patterns
-        scramble_instruction = "You are a professional editor. Rewrite the following text to improve its natural rhythm. Maintain the exact same facts and tone. Output ONLY the text."
-        
-        final_output = self._generate(
-            self.scrambler_model,
-            scramble_instruction,
-            pass1_output
-        )
+        # Final Sabotage
+        final_output = self._sabotage(output)
         
         return {
             "draft": user_input,
-            "criticism": "Dual-Pass Multi-Model Scrambling Active.",
+            "criticism": "Sabotage Protocol Active: Invisible Character Injection.",
             "humanized": final_output.strip()
         }
