@@ -69,6 +69,7 @@ st.markdown(
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.05);
             min-height: 200px;
+            white-space: pre-wrap;
         }
 
         /* Hide Streamlit Branding */
@@ -84,8 +85,9 @@ with st.sidebar:
     st.title("⚙️ Engine Room")
     ai_engine = st.radio(
         "Intelligence Engine", 
-        ["Gemini", "Groq"], 
-        help="Gemini is stable; Groq (Llama 3.1) is faster and often avoids safety filters."
+        ["Groq", "Gemini"], 
+        index=0, # Default to Groq (Recommended)
+        help="Groq (Llama 3.3) is recommended for speed and human-like variation. Gemini is available as a stable backup."
     )
     
     st.divider()
@@ -94,11 +96,14 @@ with st.sidebar:
         ["Professional/Academic", "Conversational/Casual", "Creative/Expressive", "Direct/Technical"]
     )
     
-    st.markdown("### 📊 Live Monitoring")
-    if ai_engine == "Gemini":
-        st.success("Gemini 2.5 Active")
+    st.markdown("### 📊 Engine Status")
+    if ai_engine == "Groq":
+        st.success("🟢 Llama 3.3 70B (High Speed)")
     else:
-        st.info("Llama 3.1 70B Active")
+        st.warning("🟡 Gemini 2.5 (Standard)")
+    
+    st.divider()
+    st.info("💡 **Tip**: Click outside the text box or press Ctrl+Enter to register your text before clicking the Humanize button.")
 
 # Initialize Agent
 agent = HumanizerAgent(provider=ai_engine)
@@ -115,7 +120,7 @@ with col1:
     st.subheader("📝 Input Content")
     user_input = st.text_area(
         "Paste your AI-generated draft or prompt here:", 
-        placeholder="Dear Hiring Manager...", 
+        placeholder="Paste your content here...", 
         height=400,
         label_visibility="collapsed"
     )
@@ -128,7 +133,7 @@ if process_btn and user_input:
     my_bar = st.progress(0, text="Initializing agents...")
     
     for percent in range(100):
-        time.sleep(0.01)
+        time.sleep(0.005)
         msg = "Processing..."
         if percent < 30: msg = "Analyzing linguistic patterns..."
         elif percent < 60: msg = "Performing style injection..."
@@ -136,45 +141,49 @@ if process_btn and user_input:
         else: msg = "Final verification..."
         my_bar.progress(percent + 1, text=msg)
     
-    results = agent.run_pipeline(user_input)
-    my_bar.empty()
+    try:
+        results = agent.run_pipeline(user_input)
+        my_bar.empty()
 
-    with col2:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.subheader("✨ Humanized Output")
-        st.markdown(f"<div class='comparison-text'>{results['humanized']}</div>", unsafe_allow_html=True)
-        
-        # Action Buttons
-        btn_col1, btn_col2 = st.columns(2)
-        with btn_col1:
-            st.button("📋 Copy to Clipboard", key="copy_btn")
-        with btn_col2:
-            st.download_button("📥 Download .txt", results['humanized'], file_name="humanized_content.txt")
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Metrics Analysis
-        st.markdown("### 📊 Detection Resistance Analysis")
-        m_col1, m_col2, m_col3 = st.columns(3)
-        
-        words = results["humanized"].split()
-        unique_ratio = len(set(words)) / len(words) if words else 0
-        sentences = results["humanized"].split('.')
-        lengths = [len(s.split()) for s in sentences if s.strip()]
-        variance = sum((l - sum(lengths)/len(lengths))**2 for l in lengths) / len(lengths) if lengths else 0
-        
-        with m_col1:
-            st.markdown(f"<div class='metric-box'><small>READABILITY</small><br><h2>{textstat.flesch_reading_ease(results['humanized']):.0f}</h2></div>", unsafe_allow_html=True)
-        with m_col2:
-            st.markdown(f"<div class='metric-box'><small>LEXICAL DIVERSITY</small><br><h2>{unique_ratio*100:.0f}%</h2></div>", unsafe_allow_html=True)
-        with m_col3:
-            st.markdown(f"<div class='metric-box'><small>BURSTINESS SCORE</small><br><h2>{min(variance, 100):.0f}</h2></div>", unsafe_allow_html=True)
+        with col2:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            st.subheader("✨ Humanized Output")
+            st.markdown(f"<div class='comparison-text'>{results['humanized']}</div>", unsafe_allow_html=True)
+            
+            # Action Buttons
+            btn_col1, btn_col2 = st.columns(2)
+            with btn_col1:
+                st.button("📋 Copy to Clipboard", key="copy_btn")
+            with btn_col2:
+                st.download_button("📥 Download .txt", results['humanized'], file_name="humanized_content.txt")
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+            
+            # Metrics Analysis
+            st.markdown("### 📊 Detection Resistance Analysis")
+            m_col1, m_col2, m_col3 = st.columns(3)
+            
+            words = results["humanized"].split()
+            unique_ratio = len(set(words)) / len(words) if words else 0
+            sentences = results["humanized"].split('.')
+            lengths = [len(s.split()) for s in sentences if s.strip()]
+            variance = sum((l - sum(lengths)/len(lengths))**2 for l in lengths) / len(lengths) if lengths else 0
+            
+            with m_col1:
+                st.markdown(f"<div class='metric-box'><small>READABILITY</small><br><h2>{textstat.flesch_reading_ease(results['humanized']):.0f}</h2></div>", unsafe_allow_html=True)
+            with m_col2:
+                st.markdown(f"<div class='metric-box'><small>LEXICAL DIVERSITY</small><br><h2>{unique_ratio*100:.0f}%</h2></div>", unsafe_allow_html=True)
+            with m_col3:
+                st.markdown(f"<div class='metric-box'><small>BURSTINESS SCORE</small><br><h2>{min(variance, 100):.0f}</h2></div>", unsafe_allow_html=True)
 
-        with st.expander("🔍 Internal Linguistic Audit"):
-            st.write(results["criticism"])
+            with st.expander("🔍 Internal Linguistic Audit"):
+                st.write(results["criticism"])
+    except Exception as e:
+        st.error(f"Engine Error: {str(e)}")
+        st.info("Try switching to a different Intelligence Engine in the sidebar.")
 
 elif not user_input and process_btn:
     st.sidebar.warning("Please enter some content to transform.")
 
 # Footer
-st.markdown("<br><hr><p style='text-align: center; color: #4b5563;'>Aura AI Engine v1.1 • Built for Authenticity</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align: center; color: #4b5563;'>Aura AI Engine v1.2 • Optimized for Authenticity</p>", unsafe_allow_html=True)
