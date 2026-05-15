@@ -5,70 +5,45 @@ from config import GOOGLE_API_KEY, GROQ_API_KEY, DEFAULT_GEN_MODEL, GROQ_MODEL
 from prompts import DRAFTER_PROMPT, CRITIC_PROMPT, HUMANIZER_PROMPT
 
 class HumanizerAgent:
-    def __init__(self, provider="Gemini"):
+    def __init__(self, provider="Groq"):
         self.provider = provider
-        if provider == "Gemini":
-            genai.configure(api_key=GOOGLE_API_KEY)
-            self.gemini_model = genai.GenerativeModel(
-                model_name=DEFAULT_GEN_MODEL,
-                safety_settings={'HATE': 'BLOCK_NONE', 'HARASSMENT': 'BLOCK_NONE', 'SEXUAL': 'BLOCK_NONE', 'DANGEROUS': 'BLOCK_NONE'}
-            )
-        elif provider == "Groq":
-            self.groq_client = Groq(api_key=GROQ_API_KEY)
-            self.groq_model = GROQ_MODEL
+        self.groq_client = Groq(api_key=GROQ_API_KEY)
+        self.primary_model = "llama-3.3-70b-versatile"
+        self.scrambler_model = "mixtral-8x7b-32768" # Different architecture for signature breaking
 
-    def _generate(self, system_instruction, user_content):
-        # Master rule for clean, high-quality output
-        master_rule = "\n\nIMPORTANT: Output ONLY the humanized text. Do NOT include introductory remarks, meta-notes, or explanations. Maintain all specific facts, names, and dates from the original text."
-        
-        if self.provider == "Gemini":
-            full_prompt = f"{system_instruction}{master_rule}\n\n{user_content}"
-            response = self.gemini_model.generate_content(full_prompt)
-            output = response.text
-        else:
-            chat_completion = self.groq_client.chat.completions.create(
-                messages=[
-                    {"role": "system", "content": f"{system_instruction}{master_rule}"},
-                    {"role": "user", "content": user_content},
-                ],
-                model=self.groq_model,
-                temperature=0.7, # Lower temperature for better factual coherence
-            )
-            output = chat_completion.choices[0].message.content
-        
-        return output.strip()
+    def _generate(self, model, system_instruction, user_content):
+        chat_completion = self.groq_client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": user_content},
+            ],
+            model=model,
+            temperature=0.85,
+        )
+        return chat_completion.choices[0].message.content
 
     def run_pipeline(self, user_input):
-        print(f"Running pipeline on {self.provider}...")
+        print(f"Running Dual-Pass Scrambling...")
         
-        # Determine if input is a prompt or existing text
-        is_paste = len(user_input.split()) > 50
+        # Pass 1: Street-Level Rewrite (Llama 3.3)
+        pass1_output = self._generate(
+            self.primary_model,
+            HUMANIZER_PROMPT,
+            f"Rewrite this naturally:\n\n{user_input}"
+        )
         
-        if self.provider == "Gemini":
-            # Stay single-shot for Gemini to avoid 400 errors
-            if is_paste:
-                prompt = f"{HUMANIZER_PROMPT}\n\nText to humanize:\n{user_input}"
-            else:
-                prompt = f"{DRAFTER_PROMPT}\n\n{HUMANIZER_PROMPT}\n\nUser Goal: {user_input}"
-            
-            output = self._generate("You are a Master Editor.", prompt)
-            return {
-                "draft": "Consolidated",
-                "criticism": "Performed internally",
-                "humanized": output
-            }
-        else:
-            # Use the full Agentic Pipeline for Groq/Llama
-            if is_paste:
-                draft = user_input
-            else:
-                draft = self._generate(DRAFTER_PROMPT, user_input)
-            
-            criticism = self._generate(CRITIC_PROMPT, f"Audit this text:\n{draft}")
-            humanized = self._generate(HUMANIZER_PROMPT, f"Audit Notes:\n{criticism}\n\nOriginal Text:\n{draft}")
-            
-            return {
-                "draft": draft,
-                "criticism": criticism,
-                "humanized": humanized
-            }
+        # Pass 2: Signature Scrambling (Mixtral)
+        # We tell the second model to just 'clean up' the flow slightly while breaking patterns
+        scramble_instruction = "You are a professional editor. Rewrite the following text to improve its natural rhythm. Maintain the exact same facts and tone. Output ONLY the text."
+        
+        final_output = self._generate(
+            self.scrambler_model,
+            scramble_instruction,
+            pass1_output
+        )
+        
+        return {
+            "draft": user_input,
+            "criticism": "Dual-Pass Multi-Model Scrambling Active.",
+            "humanized": final_output.strip()
+        }
