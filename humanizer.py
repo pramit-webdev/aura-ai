@@ -17,11 +17,12 @@ class HumanizerAgent:
         self.drafter_model = DEFAULT_GEN_MODEL
         self.humanizer_model = DEFAULT_HUMANIZER_MODEL
 
-    def _safe_generate(self, model, contents, retries=3):
+    def _safe_generate(self, model, system_instruction, contents, retries=3):
         for i in range(retries):
             try:
                 response = self.client.models.generate_content(
                     model=model, 
+                    config={'system_instruction': system_instruction},
                     contents=contents
                 )
                 return response.text
@@ -35,22 +36,25 @@ class HumanizerAgent:
         print("Generating initial draft...")
         return self._safe_generate(
             self.drafter_model, 
-            f"{DRAFTER_PROMPT}\n\nUser Prompt: {prompt}"
+            DRAFTER_PROMPT,
+            prompt
         )
 
     def get_criticism(self, text):
         print("Analyzing for AI signatures...")
         return self._safe_generate(
             self.drafter_model, 
-            f"{CRITIC_PROMPT}\n\nText to analyze:\n{text}"
+            CRITIC_PROMPT,
+            f"Text to analyze:\n{text}"
         )
 
     def humanize_text(self, original_text, criticism):
         print("Humanizing content...")
-        prompt = f"{HUMANIZER_PROMPT}\n\nOriginal Text:\n{original_text}\n\nCritic Feedback:\n{criticism}"
+        contents = f"Original Text:\n{original_text}\n\nCritic Feedback:\n{criticism}"
         return self._safe_generate(
             self.humanizer_model, 
-            prompt
+            HUMANIZER_PROMPT,
+            contents
         )
 
     def run_pipeline(self, user_input):
