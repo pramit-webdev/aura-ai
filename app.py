@@ -86,6 +86,37 @@ agent = HumanizerAgent(provider=ai_engine)
 st.markdown("<h1 style='text-align: center; font-size: 3.5rem;'>Aura AI</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #9ca3af; font-size: 1.2rem; margin-bottom: 3rem;'>Professional Content Humanizer & Detection Bypass</p>", unsafe_allow_html=True)
 
+# JavaScript Copy-to-Clipboard Component
+def copy_button(text):
+    html_code = f"""
+    <button id="copy-btn" style="
+        width: 100%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: 'Outfit', sans-serif;
+        text-transform: uppercase;
+        margin-top: 10px;
+    ">📋 Copy to Clipboard</button>
+    <textarea id="copy-text" style="display:none;">{text}</textarea>
+    <script>
+        document.getElementById('copy-btn').onclick = function() {{
+            var textArea = document.getElementById('copy-text');
+            textArea.style.display = "block";
+            textArea.select();
+            document.execCommand('copy');
+            textArea.style.display = "none";
+            this.innerText = "✅ Copied!";
+            setTimeout(() => {{ this.innerText = "📋 Copy to Clipboard"; }}, 2000);
+        }};
+    </script>
+    """
+    st.components.v1.html(html_code, height=70)
+
 # Main Columns
 col1, col2 = st.columns([1, 1], gap="large")
 
@@ -98,8 +129,7 @@ with col1:
 
 # Run Pipeline
 if process_btn and user_input:
-    with st.status("Agents are working...", expanded=True) as status:
-        st.write("Analyzing linguistic patterns...")
+    with st.status("Injecting Human Anchors...", expanded=True) as status:
         try:
             st.session_state.results = agent.run_pipeline(user_input)
             status.update(label="Humanization complete!", state="complete", expanded=False)
@@ -113,12 +143,10 @@ if st.session_state.results:
         st.subheader("✨ Humanized Output")
         st.markdown(f"<div class='comparison-text'>{st.session_state.results['humanized']}</div>", unsafe_allow_html=True)
         
-        c_btn1, c_btn2 = st.columns(2)
-        with c_btn1:
-            if st.button("📋 Show Copyable Code"):
-                st.code(st.session_state.results['humanized'], language=None)
-        with c_btn2:
-            st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized.txt")
+        # Use our custom copy button
+        copy_button(st.session_state.results['humanized'])
+        
+        st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized.txt")
         st.markdown("</div>", unsafe_allow_html=True)
         
         # Metrics
