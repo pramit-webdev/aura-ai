@@ -17,23 +17,14 @@ class HumanizerAgent:
         self.drafter_model = DEFAULT_GEN_MODEL
         self.humanizer_model = DEFAULT_HUMANIZER_MODEL
 
-    def _safe_generate(self, model, system_instruction, contents, retries=3):
-        # Disable safety filters to prevent over-sensitive blocking
-        safety_settings = [
-            {"category": "HATE_SPEECH", "threshold": "BLOCK_NONE"},
-            {"category": "HARASSMENT", "threshold": "BLOCK_NONE"},
-            {"category": "SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-            {"category": "DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
-        ]
+    def _safe_generate(self, model, contents, retries=3):
+        # Use a simpler model for testing
+        model = "models/gemini-2.0-flash-lite"
         
         for i in range(retries):
             try:
                 response = self.client.models.generate_content(
                     model=model, 
-                    config={
-                        'system_instruction': system_instruction,
-                        'safety_settings': safety_settings
-                    },
                     contents=contents
                 )
                 return response.text
@@ -75,16 +66,13 @@ class HumanizerAgent:
         is_paste = len(user_input.split()) > 50
         
         if is_paste:
-            instruction = HUMANIZER_PROMPT
-            contents = f"Please audit and rewrite the following text to sound human:\n\n{user_input}"
+            prompt = f"{HUMANIZER_PROMPT}\n\nText to humanize:\n{user_input}"
         else:
-            instruction = f"{DRAFTER_PROMPT}\n\n{HUMANIZER_PROMPT}"
-            contents = f"Goal: Write and humanize content for this prompt: {user_input}"
+            prompt = f"{DRAFTER_PROMPT}\n\n{HUMANIZER_PROMPT}\n\nUser Goal: {user_input}"
 
         output = self._safe_generate(
             self.humanizer_model, 
-            instruction,
-            contents
+            prompt
         )
         
         return {
