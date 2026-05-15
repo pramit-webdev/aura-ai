@@ -3,4 +3,3 @@ google-generativeai
 groq
 textstat
 python-dotenv
-agentscope
