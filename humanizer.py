@@ -18,11 +18,22 @@ class HumanizerAgent:
         self.humanizer_model = DEFAULT_HUMANIZER_MODEL
 
     def _safe_generate(self, model, system_instruction, contents, retries=3):
+        # Disable safety filters to prevent over-sensitive blocking
+        safety_settings = [
+            {"category": "HATE_SPEECH", "threshold": "BLOCK_NONE"},
+            {"category": "HARASSMENT", "threshold": "BLOCK_NONE"},
+            {"category": "SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+            {"category": "DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+        ]
+        
         for i in range(retries):
             try:
                 response = self.client.models.generate_content(
                     model=model, 
-                    config={'system_instruction': system_instruction},
+                    config={
+                        'system_instruction': system_instruction,
+                        'safety_settings': safety_settings
+                    },
                     contents=contents
                 )
                 return response.text
