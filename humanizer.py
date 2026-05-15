@@ -69,25 +69,28 @@ class HumanizerAgent:
         )
 
     def run_pipeline(self, user_input):
+        print("Starting single-shot humanization...")
+        
         # Determine if input is a prompt or existing text
         is_paste = len(user_input.split()) > 50
         
         if is_paste:
-            print("Pasted content detected. Skipping initial draft phase...")
-            draft = user_input
+            instruction = HUMANIZER_PROMPT
+            contents = f"Please audit and rewrite the following text to sound human:\n\n{user_input}"
         else:
-            draft = self.generate_initial_draft(user_input)
-            time.sleep(1) # Small delay to prevent burst limits
-        
-        criticism = self.get_criticism(draft)
-        time.sleep(1)
-        
-        humanized = self.humanize_text(draft, criticism)
+            instruction = f"{DRAFTER_PROMPT}\n\n{HUMANIZER_PROMPT}"
+            contents = f"Goal: Write and humanize content for this prompt: {user_input}"
+
+        output = self._safe_generate(
+            self.humanizer_model, 
+            instruction,
+            contents
+        )
         
         return {
-            "draft": draft,
-            "criticism": criticism,
-            "humanized": humanized
+            "draft": "Consolidated into single-shot.",
+            "criticism": "Performed internally by single-shot agent.",
+            "humanized": output
         }
 
 if __name__ == "__main__":
