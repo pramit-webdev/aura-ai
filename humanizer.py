@@ -24,13 +24,15 @@ class HumanizerAgent:
         return '\n'.join(cleaned_lines).strip()
 
     def _call_agent(self, role_prompt, content):
+        # Randomize temperature for "Linguistic Jitter"
+        temp = random.uniform(0.85, 1.1)
         chat_completion = self.groq_client.chat.completions.create(
             messages=[
                 {"role": "system", "content": role_prompt},
                 {"role": "user", "content": content}
             ],
             model=self.model,
-            temperature=0.9,
+            temperature=temp,
         )
         raw_text = chat_completion.choices[0].message.content
         return self._clean_output(raw_text)
