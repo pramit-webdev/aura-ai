@@ -19,27 +19,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Initialize Session State for persistence
+if 'results' not in st.session_state:
+    st.session_state.results = None
+
 # Custom CSS for a Premium, Glassmorphic Design
 st.markdown(
     """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        /* Main Background */
         .stApp {
             background: radial-gradient(circle at top right, #1a1c2c 0%, #0d0e14 100%) !important;
             font-family: 'Inter', sans-serif !important;
         }
-
-        /* Titles & Headers */
         h1, h2, h3 {
             font-family: 'Outfit', sans-serif !important;
-            font-weight: 700 !important;
             background: linear-gradient(90deg, #fff 0%, #aaa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        /* Glassmorphic Container */
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
@@ -47,10 +45,7 @@ st.markdown(
             border-radius: 20px;
             padding: 2rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-
-        /* Metrics Row */
         .metric-box {
             text-align: center;
             padding: 1rem;
@@ -58,8 +53,6 @@ st.markdown(
             border-radius: 15px;
             border-bottom: 3px solid #6366f1;
         }
-        
-        /* Comparison Container */
         .comparison-text {
             font-size: 0.95rem;
             line-height: 1.6;
@@ -71,8 +64,6 @@ st.markdown(
             min-height: 200px;
             white-space: pre-wrap;
         }
-
-        /* Hide Streamlit Branding */
         div[data-testid="stToolbar"] { visibility: hidden; }
         footer { visibility: hidden; }
     </style>
@@ -86,8 +77,8 @@ with st.sidebar:
     ai_engine = st.radio(
         "Intelligence Engine", 
         ["Groq", "Gemini"], 
-        index=0, # Default to Groq (Recommended)
-        help="Groq (Llama 3.3) is recommended for speed and human-like variation. Gemini is available as a stable backup."
+        index=0,
+        help="Groq (Llama 3.3) is recommended for speed and human-like variation."
     )
     
     st.divider()
@@ -103,7 +94,7 @@ with st.sidebar:
         st.warning("🟡 Gemini 2.5 (Standard)")
     
     st.divider()
-    st.info("💡 **Tip**: Click outside the text box or press Ctrl+Enter to register your text before clicking the Humanize button.")
+    st.info("💡 **Tip**: Click outside the text box or press Ctrl+Enter to register your text.")
 
 # Initialize Agent
 agent = HumanizerAgent(provider=ai_engine)
@@ -119,7 +110,7 @@ with col1:
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.subheader("📝 Input Content")
     user_input = st.text_area(
-        "Paste your AI-generated draft or prompt here:", 
+        "Paste your content here:", 
         placeholder="Paste your content here...", 
         height=400,
         label_visibility="collapsed"
@@ -128,62 +119,60 @@ with col1:
     process_btn = st.button("🚀 Humanize & Bypass")
     st.markdown("</div>", unsafe_allow_html=True)
 
+# Processing Logic
 if process_btn and user_input:
-    # Progress Bar
     my_bar = st.progress(0, text="Initializing agents...")
     
     for percent in range(100):
         time.sleep(0.005)
-        msg = "Processing..."
-        if percent < 30: msg = "Analyzing linguistic patterns..."
-        elif percent < 60: msg = "Performing style injection..."
-        elif percent < 90: msg = "Maximizing burstiness score..."
-        else: msg = "Final verification..."
+        msg = "Analyzing linguistic patterns..." if percent < 50 else "Performing style injection..."
         my_bar.progress(percent + 1, text=msg)
     
     try:
-        results = agent.run_pipeline(user_input)
+        st.session_state.results = agent.run_pipeline(user_input)
         my_bar.empty()
-
-        with col2:
-            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-            st.subheader("✨ Humanized Output")
-            st.markdown(f"<div class='comparison-text'>{results['humanized']}</div>", unsafe_allow_html=True)
-            
-            # Action Buttons
-            btn_col1, btn_col2 = st.columns(2)
-            with btn_col1:
-                st.button("📋 Copy to Clipboard", key="copy_btn")
-            with btn_col2:
-                st.download_button("📥 Download .txt", results['humanized'], file_name="humanized_content.txt")
-            
-            st.markdown("</div>", unsafe_allow_html=True)
-            
-            # Metrics Analysis
-            st.markdown("### 📊 Detection Resistance Analysis")
-            m_col1, m_col2, m_col3 = st.columns(3)
-            
-            words = results["humanized"].split()
-            unique_ratio = len(set(words)) / len(words) if words else 0
-            sentences = results["humanized"].split('.')
-            lengths = [len(s.split()) for s in sentences if s.strip()]
-            variance = sum((l - sum(lengths)/len(lengths))**2 for l in lengths) / len(lengths) if lengths else 0
-            
-            with m_col1:
-                st.markdown(f"<div class='metric-box'><small>READABILITY</small><br><h2>{textstat.flesch_reading_ease(results['humanized']):.0f}</h2></div>", unsafe_allow_html=True)
-            with m_col2:
-                st.markdown(f"<div class='metric-box'><small>LEXICAL DIVERSITY</small><br><h2>{unique_ratio*100:.0f}%</h2></div>", unsafe_allow_html=True)
-            with m_col3:
-                st.markdown(f"<div class='metric-box'><small>BURSTINESS SCORE</small><br><h2>{min(variance, 100):.0f}</h2></div>", unsafe_allow_html=True)
-
-            with st.expander("🔍 Internal Linguistic Audit"):
-                st.write(results["criticism"])
     except Exception as e:
         st.error(f"Engine Error: {str(e)}")
-        st.info("Try switching to a different Intelligence Engine in the sidebar.")
 
-elif not user_input and process_btn:
-    st.sidebar.warning("Please enter some content to transform.")
+# Display Results if they exist in session state
+if st.session_state.results:
+    with col2:
+        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+        st.subheader("✨ Humanized Output")
+        st.markdown(f"<div class='comparison-text'>{st.session_state.results['humanized']}</div>", unsafe_allow_html=True)
+        
+        # Action Buttons
+        btn_col1, btn_col2 = st.columns(2)
+        with btn_col1:
+            # We use a button to trigger a rerun, but the text stays because of session state
+            if st.button("📋 Copy to Clipboard"):
+                st.toast("Copied to clipboard! (Highlight and Copy below for now)")
+                st.code(st.session_state.results['humanized'], language=None)
+        with btn_col2:
+            st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized_content.txt")
+        
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Metrics Analysis
+        st.markdown("### 📊 Detection Resistance Analysis")
+        m_col1, m_col2, m_col3 = st.columns(3)
+        
+        res_text = st.session_state.results["humanized"]
+        words = res_text.split()
+        unique_ratio = len(set(words)) / len(words) if words else 0
+        sentences = res_text.split('.')
+        lengths = [len(s.split()) for s in sentences if s.strip()]
+        variance = sum((l - sum(lengths)/len(lengths))**2 for l in lengths) / len(lengths) if lengths else 0
+        
+        with m_col1:
+            st.markdown(f"<div class='metric-box'><small>READABILITY</small><br><h2>{textstat.flesch_reading_ease(res_text):.0f}</h2></div>", unsafe_allow_html=True)
+        with m_col2:
+            st.markdown(f"<div class='metric-box'><small>LEXICAL DIVERSITY</small><br><h2>{unique_ratio*100:.0f}%</h2></div>", unsafe_allow_html=True)
+        with m_col3:
+            st.markdown(f"<div class='metric-box'><small>BURSTINESS SCORE</small><br><h2>{min(variance, 100):.0f}</h2></div>", unsafe_allow_html=True)
+
+        with st.expander("🔍 Internal Linguistic Audit"):
+            st.write(st.session_state.results["criticism"])
 
 # Footer
-st.markdown("<br><hr><p style='text-align: center; color: #4b5563;'>Aura AI Engine v1.2 • Optimized for Authenticity</p>", unsafe_allow_html=True)
+st.markdown("<br><hr><p style='text-align: center; color: #4b5563;'>Aura AI Engine v1.3 • State-Persistent Edition</p>", unsafe_allow_html=True)
