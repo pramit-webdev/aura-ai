@@ -45,14 +45,15 @@ class HumanizerAgent:
         
         # Adversarial Loop
         attempts = 0
-        max_attempts = 1 # Reducing to 1 for speed and stability
+        max_attempts = 3 # Increased for "Nuclear" mode
         
         while attempts < max_attempts:
             attempts += 1
             audit_report = self.auditor.audit(current_text)
             print(f">>> AUDIT ATTEMPT {attempts}: Score {audit_report['detection_probability']}%")
             
-            if audit_report['detection_probability'] < 20:
+            # We want < 10% detection for a "Nuclear" bypass
+            if audit_report['detection_probability'] < 10:
                 break
             
             # Feedback from Auditor Agent

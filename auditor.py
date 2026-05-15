@@ -15,6 +15,10 @@ class SOTAAuditor:
         return min(100, (math.sqrt(variance) / (avg + 1)) * 100)
 
     def _get_linguistic_chaos(self, text):
+        # AI CLICHE DETECTION
+        ai_cliches = ['unwavering', 'testament', 'delve', 'innovative', 'pivotal', 'comprehensive', 'harnessing', 'tapestry']
+        cliche_penalty = sum(10 for word in ai_cliches if word in text.lower())
+        
         words = re.findall(r'\w+', text.lower())
         if not words: return 0
         counts = Counter(words)
@@ -38,10 +42,14 @@ class SOTAAuditor:
         burstiness = self._get_sentence_burstiness(sentences)
         chaos = self._get_linguistic_chaos(text)
         
-        # FIX: Higher Burstiness/Chaos should LOWER the detection probability
-        # If human_score is 100, detection is 0.
+        # Calculate final score with penalties
         human_score = (burstiness * 0.4) + (chaos * 0.6)
-        detection_probability = max(0, 100 - human_score)
+        
+        # APPLY CLICHE PENALTY (defined in linguistic chaos)
+        ai_cliches = ['unwavering', 'testament', 'delve', 'innovative', 'pivotal', 'comprehensive', 'harnessing', 'tapestry']
+        cliche_penalty = sum(15 for word in ai_cliches if word in text.lower())
+        
+        detection_probability = max(0, min(100, (100 - human_score) + cliche_penalty))
         
         return {
             "detection_probability": round(detection_probability, 1),
