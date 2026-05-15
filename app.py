@@ -123,12 +123,29 @@ col1, col2 = st.columns([1, 1], gap="large")
 with col1:
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.subheader("📝 Input Content")
-    user_input = st.text_area("Input", placeholder="Paste content here...", height=400, label_visibility="collapsed")
-    process_btn = st.button("🚀 Humanize & Bypass")
+    
+    user_input = st.text_area("Paste AI text OR enter a topic:", height=250, placeholder="Example: 'Write 100 words about the beauty of Kerala' or paste your ChatGPT output here...")
+    
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        run_btn = st.button("🚀 Humanize & Bypass", use_container_width=True)
+    with col_btn2:
+        stress_btn = st.button("🎲 Stress Test (Random Topic)", use_container_width=True)
+
+    if stress_btn:
+        topics = [
+            "The impact of Artificial Intelligence on job markets",
+            "Why Darjeeling tea is the best in the world",
+            "The historical significance of the Taj Mahal",
+            "Climate change and its effect on coastal cities",
+            "The benefits of a Mediterranean diet"
+        ]
+        user_input = f"Write a detailed 100-word paragraph about: {random.choice(topics)}"
+        run_btn = True # Trigger the run
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Run Pipeline
-if process_btn and user_input:
+if run_btn and user_input:
     with st.status("Injecting Human Anchors...", expanded=True) as status:
         try:
             st.session_state.results = agent.run_pipeline(user_input)

@@ -24,6 +24,13 @@ class HumanizerAgent:
     def run_pipeline(self, user_input):
         print(f">>> STARTING PIPELINE for input: {user_input[:50]}...")
         
+        # Check if input is a prompt/topic (short) or existing text (long)
+        if len(user_input.split()) < 20 or "write" in user_input.lower():
+            print(">>> TOPIC DETECTED. Drafting initial AI content...")
+            initial_draft = self._call_agent("You are a helpful AI assistant. Write exactly 100 words in a standard, robotic AI style about the topic.", user_input)
+            user_input = initial_draft # Use this as the base to humanize
+            print(f">>> INITIAL AI DRAFT: {user_input[:100]}...")
+
         # Phase 1: Fact Extraction
         facts = self._call_agent(FACT_AGENT_PROMPT, user_input)
         print(f">>> AGENT 1 (FACTS) OUTPUT: {facts[:100]}...")
