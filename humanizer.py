@@ -1,4 +1,5 @@
 import os
+import random
 from groq import Groq
 from config import GROQ_API_KEY
 from auditor import SOTAAuditor
