@@ -18,19 +18,21 @@ class HumanizerAgent:
             self.groq_model = GROQ_MODEL
 
     def _generate(self, system_instruction, user_content):
+        # Strict instruction for all providers
+        master_rule = "\n\nIMPORTANT: Output ONLY the transformed text. Do NOT include any introductory remarks, notes, explanations, or formatting markers. If you explain your work, you have failed."
+        
         if self.provider == "Gemini":
-            # Gemini Single-Shot (to avoid filters)
-            full_prompt = f"{system_instruction}\n\n{user_content}"
+            full_prompt = f"{system_instruction}{master_rule}\n\n{user_content}"
             response = self.gemini_model.generate_content(full_prompt)
             return response.text
         else:
-            # Groq Multi-Turn (much more powerful for reasoning)
             chat_completion = self.groq_client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": system_instruction},
+                    {"role": "system", "content": f"{system_instruction}{master_rule}"},
                     {"role": "user", "content": user_content},
                 ],
                 model=self.groq_model,
+                temperature=0.9, # Increase randomness for better bypass
             )
             return chat_completion.choices[0].message.content
 
