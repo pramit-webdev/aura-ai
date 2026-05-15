@@ -189,6 +189,7 @@ if st.session_state.results:
         
         # Live SOTA Audit
         st.markdown(f"### 🛡️ Live SOTA Audit")
+        audit = st.session_state.results['audit_report']
         prob = audit.get('detection_probability', 0)
         color = "#ff4b4b" if prob > 70 else "#ffa500" if prob > 40 else "#10b981"
         
@@ -201,9 +202,9 @@ if st.session_state.results:
         
         m1, m2 = st.columns(2)
         with m1:
-            st.markdown(f"<div class='metric-box'><small>BURSTINESS</small><br><h2>{audit.get('burstiness', 0):.0f}</h2></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-box'><small>BURSTINESS</small><br><h2>{audit.get('burstiness_score', 0):.0f}</h2></div>", unsafe_allow_html=True)
         with m2:
-            st.markdown(f"<div class='metric-box'><small>LINGUISTIC CHAOS</small><br><h2>{audit.get('chaos', 0):.0f}</h2></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='metric-box'><small>LINGUISTIC CHAOS</small><br><h2>{audit.get('chaos_score', 0):.0f}</h2></div>", unsafe_allow_html=True)
 
         with st.expander("🔍 Internal Audit Feedback"):
             st.info(st.session_state.results["criticism"])
