@@ -33,8 +33,15 @@ class HumanizerAgent:
         response = self.humanizer.generate_content(prompt)
         return response.text
 
-    def run_pipeline(self, user_prompt):
-        draft = self.generate_initial_draft(user_prompt)
+    def run_pipeline(self, user_input):
+        # If the input is long, treat it as the draft. 
+        # If it's short, use it as a prompt to generate a new draft.
+        if len(user_input.split()) > 50:
+            draft = user_input
+            print("Pasted content detected. Skipping initial draft phase...")
+        else:
+            draft = self.generate_initial_draft(user_input)
+        
         criticism = self.get_criticism(draft)
         humanized = self.humanize_text(draft, criticism)
         return {
