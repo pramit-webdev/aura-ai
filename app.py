@@ -10,6 +10,7 @@ import streamlit as st
 from humanizer import HumanizerAgent
 import textstat
 import time
+import random
 
 # Page Configuration
 st.set_page_config(
