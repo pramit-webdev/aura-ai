@@ -4,51 +4,61 @@ from collections import Counter
 
 class SOTAAuditor:
     def __init__(self):
-        # Top 100 common AI 'filler' and 'connector' words to flag
         self.ai_markers = {
             'significant', 'watershed', 'groundwork', 'transformation', 
             'resonate', 'landscape', 'testament', 'furthermore', 
-            'moreover', 'comprehensive', 'harness', 'leverage'
+            'moreover', 'comprehensive', 'harness', 'leverage',
+            'delve', 'ensure', 'vital', 'crucial', 'undoubtedly'
         }
 
-    def calculate_burstiness(self, text):
-        sentences = re.split(r'[.!?]+', text)
-        lengths = [len(s.split()) for s in sentences if s.strip()]
-        if not lengths: return 0
+    def _get_sentence_score(self, sentence):
+        words = re.findall(r'\w+', sentence.lower())
+        if len(words) < 3: return 0
         
-        avg = sum(lengths) / len(lengths)
-        variance = sum((l - avg)**2 for l in lengths) / len(lengths)
-        # Higher variance = more 'bursty' (human-like)
-        return min(variance * 2, 100)
-
-    def calculate_perplexity_proxy(self, text):
-        words = re.findall(r'\w+', text.lower())
-        if not words: return 0
-        
-        counts = Counter(words)
-        total = len(words)
-        # Simplified Shannon Entropy as a proxy for Perplexity
-        entropy = -sum((count/total) * math.log2(count/total) for count in counts.values())
-        # Higher entropy = less predictable (human-like)
-        return min(entropy * 15, 100)
+        # Check for predictable structure (Subject-Verb-Object)
+        # This is a simplified proxy for linguistic entropy
+        unique_ratio = len(set(words)) / len(words)
+        return 100 - (unique_ratio * 100)
 
     def audit(self, text):
-        burstiness = self.calculate_burstiness(text)
-        complexity = self.calculate_perplexity_proxy(text)
+        sentences = [s.strip() for s in re.split(r'[.!?]+', text) if s.strip()]
         
-        # Check for AI marker density
-        words_set = set(re.findall(r'\w+', text.lower()))
-        markers_found = words_set.intersection(self.ai_markers)
-        marker_penalty = len(markers_found) * 10
+        # 1. Sentence-Level Heatmap
+        sentence_scores = []
+        for s in sentences:
+            score = self._get_sentence_score(s)
+            # Add penalty for AI markers in sentence
+            markers = [w for w in s.lower().split() if w in self.ai_markers]
+            score += len(markers) * 20
+            sentence_scores.append({"text": s, "score": min(score, 100)})
+
+        # 2. Burstiness (Variance in length)
+        lengths = [len(s.split()) for s in sentences]
+        avg_len = sum(lengths) / len(lengths) if lengths else 0
+        burstiness = sum((l - avg_len)**2 for l in lengths) / len(lengths) if lengths else 0
+        burstiness_score = min(burstiness * 3, 100)
+
+        # 3. Zipf's Law Deviation (Uniqueness of word distribution)
+        words = re.findall(r'\w+', text.lower())
+        counts = sorted(Counter(words).values(), reverse=True)
+        # AI follows a perfect power law curve. Humans deviate.
+        deviation = 0
+        if len(counts) > 5:
+            for i in range(min(len(counts), 10)):
+                expected = counts[0] / (i + 1)
+                deviation += abs(counts[i] - expected)
+        chaos_score = min(deviation * 5, 100)
+
+        # 4. Final Aggregated Detection Probability
+        # Weighted: Chaos (Zipf) 40%, Burstiness 30%, Markers 30%
+        marker_count = sum(1 for w in words if w in self.ai_markers)
+        marker_penalty = (marker_count / (len(words) + 1)) * 500
         
-        # SOTA Detection Likelihood Logic
-        # Lower score is better (Human)
-        score = (burstiness * 0.4) + (complexity * 0.6)
-        detection_prob = 100 - score + marker_penalty
+        detection_prob = (100 - chaos_score) * 0.4 + (100 - burstiness_score) * 0.3 + marker_penalty
         
         return {
             "detection_probability": max(min(detection_prob, 100), 0),
-            "burstiness": burstiness,
-            "complexity": complexity,
-            "markers_found": list(markers_found)
+            "burstiness": burstiness_score,
+            "chaos": chaos_score,
+            "heatmap": sentence_scores
         }

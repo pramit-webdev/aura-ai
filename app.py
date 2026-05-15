@@ -140,22 +140,27 @@ if process_btn and user_input:
 if st.session_state.results:
     with col2:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.subheader("✨ Humanized Output")
-        st.markdown(f"<div class='comparison-text'>{st.session_state.results['humanized']}</div>", unsafe_allow_html=True)
+        st.subheader("✨ Humanized Output (with Heatmap)")
         
-        # Use our custom copy button
+        # Render Heatmap from Audit Report
+        audit = st.session_state.results.get('audit_report', {})
+        heatmap_html = ""
+        for s in audit.get('heatmap', []):
+            score = s['score']
+            color = "rgba(255, 75, 75, 0.2)" if score > 70 else "rgba(255, 165, 0, 0.15)" if score > 40 else "transparent"
+            heatmap_html += f"<span style='background-color: {color}; border-radius: 4px; padding: 2px;'>{s['text']}. </span>"
+        
+        st.markdown(f"<div class='comparison-text' style='height: auto;'>{heatmap_html}</div>", unsafe_allow_html=True)
+        
+        # Action Buttons
         copy_button(st.session_state.results['humanized'])
+        st.download_button("📥 Download .txt", st.session_state.results['humanized'], file_name="humanized.txt")
+        st.markdown("</div>", unsafe_allow_html=True)
         
         # Live SOTA Audit
-        from auditor import SOTAAuditor
-        auditor = SOTAAuditor()
-        audit_results = auditor.audit(st.session_state.results['humanized'])
-        
         st.markdown(f"### 🛡️ Live SOTA Audit")
-        
-        # Color-coded detection probability
-        prob = audit_results['detection_probability']
-        color = "red" if prob > 70 else "orange" if prob > 40 else "green"
+        prob = audit.get('detection_probability', 0)
+        color = "#ff4b4b" if prob > 70 else "#ffa500" if prob > 40 else "#10b981"
         
         st.markdown(f"""
         <div style='background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 15px; border-left: 5px solid {color};'>
@@ -164,14 +169,14 @@ if st.session_state.results:
         </div>
         """, unsafe_allow_html=True)
         
-        m_col1, m_col2 = st.columns(2)
-        with m_col1:
-            st.markdown(f"<div class='metric-box'><small>BURSTINESS</small><br><h2>{audit_results['burstiness']:.0f}</h2></div>", unsafe_allow_html=True)
-        with m_col2:
-            st.markdown(f"<div class='metric-box'><small>COMPLEXITY</small><br><h2>{audit_results['complexity']:.0f}</h2></div>", unsafe_allow_html=True)
-        
-        if audit_results['markers_found']:
-            st.warning(f"⚠️ AI Markers Detected: {', '.join(audit_results['markers_found'])}")
+        m1, m2 = st.columns(2)
+        with m1:
+            st.markdown(f"<div class='metric-box'><small>BURSTINESS</small><br><h2>{audit.get('burstiness', 0):.0f}</h2></div>", unsafe_allow_html=True)
+        with m2:
+            st.markdown(f"<div class='metric-box'><small>LINGUISTIC CHAOS</small><br><h2>{audit.get('chaos', 0):.0f}</h2></div>", unsafe_allow_html=True)
 
-        with st.expander("🔍 Detailed Linguistic Breakdown"):
-            st.write(st.session_state.results["criticism"])
+        with st.expander("🔍 Internal Audit Feedback"):
+            st.info(st.session_state.results["criticism"])
+        
+# Footer
+st.markdown("<br><hr><p style='text-align: center; color: #4b5563;'>Aura AI Enterprise v2.0 • Pro-Grade Audit & Generation</p>", unsafe_allow_html=True)
