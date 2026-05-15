@@ -20,91 +20,93 @@ st.set_page_config(
 )
 
 # Custom CSS for a Premium, Glassmorphic Design
-st.markdown("""
+st.markdown(
+    """
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-    /* Main Background */
-    .stApp {
-        background: radial-gradient(circle at top right, #1a1c2c 0%, #0d0e14 100%);
-        font-family: 'Inter', sans-serif;
-    }
+        /* Main Background */
+        .stApp {
+            background: radial-gradient(circle at top right, #1a1c2c 0%, #0d0e14 100%) !important;
+            font-family: 'Inter', sans-serif !important;
+        }
 
-    /* Titles & Headers */
-    h1, h2, h3 {
-        font-family: 'Outfit', sans-serif;
-        font-weight: 700;
-        background: linear-gradient(90deg, #fff 0%, #aaa 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+        /* Titles & Headers */
+        h1, h2, h3 {
+            font-family: 'Outfit', sans-serif !important;
+            font-weight: 700 !important;
+            background: linear-gradient(90deg, #fff 0%, #aaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-    /* Glassmorphic Container */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    }
+        /* Glassmorphic Container */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
 
-    /* Input/Text Areas */
-    .stTextArea textarea {
-        background: rgba(0, 0, 0, 0.2) !important;
-        color: #e0e0e0 !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 12px !important;
-        font-family: 'Inter', sans-serif;
-        font-size: 1.05rem;
-    }
+        /* Input/Text Areas */
+        .stTextArea textarea {
+            background: rgba(0, 0, 0, 0.2) !important;
+            color: #e0e0e0 !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 1.05rem !important;
+        }
 
-    /* Buttons */
-    .stButton>button {
-        width: 100%;
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        color: white !important;
-        border: none !important;
-        padding: 0.75rem 2rem !important;
-        border-radius: 12px !important;
-        font-weight: 700 !important;
-        font-family: 'Outfit', sans-serif !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
-        opacity: 0.9;
-    }
+        /* Buttons */
+        .stButton>button {
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+            color: white !important;
+            border: none !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-family: 'Outfit', sans-serif !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3) !important;
+        }
+        .stButton>button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
+            opacity: 0.9;
+        }
 
-    /* Metric Cards */
-    .metric-box {
-        text-align: center;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        border-bottom: 3px solid #6366f1;
-    }
-    
-    /* Comparison Container */
-    .comparison-text {
-        font-size: 0.95rem;
-        line-height: 1.6;
-        color: #d1d5db;
-        padding: 1rem;
-        border-radius: 10px;
-        background: rgba(0, 0, 0, 0.2);
-    }
+        /* Metric Cards */
+        .metric-box {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border-bottom: 3px solid #6366f1;
+        }
+        
+        /* Comparison Container */
+        .comparison-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #d1d5db;
+            padding: 1rem;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+        }
 
-    /* Hide Streamlit Branding */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+        /* Hide Streamlit Branding */
+        div[data-testid="stToolbar"] { visibility: hidden; }
+        footer { visibility: hidden; }
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
 # App Content
 st.markdown("<h1 style='text-align: center; font-size: 3.5rem;'>Aura AI</h1>", unsafe_allow_html=True)
