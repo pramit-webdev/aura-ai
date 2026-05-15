@@ -31,6 +31,10 @@ class SOTAAuditor:
         sentences = re.split(r'[.!?]+', text)
         sentences = [s.strip() for s in sentences if len(s.strip()) > 2]
         
+        # Fallback if splitting fails
+        if not sentences:
+            sentences = [text.strip()]
+        
         burstiness = self._get_sentence_burstiness(sentences)
         chaos = self._get_linguistic_chaos(text)
         

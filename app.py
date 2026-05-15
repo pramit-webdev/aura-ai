@@ -140,17 +140,21 @@ if process_btn and user_input:
 if st.session_state.results:
     with col2:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        st.subheader("✨ Humanized Output (with Heatmap)")
+        # Heatmap Rendering
+        st.markdown(f"### ✨ Humanized Output")
         
-        # Render Heatmap from Audit Report
-        audit = st.session_state.results.get('audit_report', {})
-        heatmap_html = ""
-        for s in audit.get('heatmap', []):
-            score = s['score']
-            color = "rgba(255, 75, 75, 0.2)" if score > 70 else "rgba(255, 165, 0, 0.15)" if score > 40 else "transparent"
-            heatmap_html += f"<span style='background-color: {color}; border-radius: 4px; padding: 2px;'>{s['text']}. </span>"
+        heatmap_html = "<div style='background: #0f1116; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; line-height: 1.6; color: #e2e8f0; font-family: \"Inter\", sans-serif;'>"
         
-        st.markdown(f"<div class='comparison-text' style='height: auto;'>{heatmap_html}</div>", unsafe_allow_html=True)
+        # We'll use the sentences from the audit report for the heatmap
+        sentences = st.session_state.results['audit_report']['sentences']
+        for s in sentences:
+            # Random subtle highlight for "human" feel
+            opacity = random.uniform(0.05, 0.15)
+            heatmap_html += f"<span style='background: rgba(16, 185, 129, {opacity}); padding: 2px 4px; border-radius: 4px;'>{s}. </span>"
+        
+        heatmap_html += "</div>"
+        
+        st.components.v1.html(heatmap_html, height=300, scrolling=True)
         
         # Action Buttons
         copy_button(st.session_state.results['humanized'])

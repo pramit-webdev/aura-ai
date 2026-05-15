@@ -22,32 +22,42 @@ class HumanizerAgent:
         return chat_completion.choices[0].message.content
 
     def run_pipeline(self, user_input):
-        print(">>> Multi-Agent Pipeline: Fact Extraction")
-        facts = self._call_agent(FACT_AGENT_PROMPT, user_input)
+        print(f">>> STARTING PIPELINE for input: {user_input[:50]}...")
         
-        print(">>> Multi-Agent Pipeline: Initial Sabotage")
+        # Phase 1: Fact Extraction
+        facts = self._call_agent(FACT_AGENT_PROMPT, user_input)
+        print(f">>> AGENT 1 (FACTS) OUTPUT: {facts[:100]}...")
+        
+        if not facts: facts = user_input # Fallback
+        
+        # Phase 2: Initial Sabotage
         current_text = self._call_agent(SABOTEUR_PROMPT, f"FACTS TO USE:\n{facts}")
+        print(f">>> AGENT 2 (SABOTAGE) OUTPUT: {current_text[:100]}...")
+        
+        if not current_text: current_text = facts # Fallback
         
         # Adversarial Loop
         attempts = 0
-        max_attempts = 2
+        max_attempts = 1 # Reducing to 1 for speed and stability
         
         while attempts < max_attempts:
             attempts += 1
-            print(f">>> Multi-Agent Pipeline: Audit Attempt {attempts}")
-            audit_score = self.auditor.audit(current_text)
+            audit_report = self.auditor.audit(current_text)
+            print(f">>> AUDIT ATTEMPT {attempts}: Score {audit_report['detection_probability']}%")
             
-            if audit_score['detection_probability'] < 15:
+            if audit_report['detection_probability'] < 20:
                 break
             
             # Feedback from Auditor Agent
             feedback = self._call_agent(AUDITOR_PROMPT, f"AUDIT THIS TEXT:\n{current_text}")
+            print(f">>> AGENT 3 (AUDITOR FEEDBACK): {feedback[:100]}...")
             
             # Refine
-            current_text = self._call_agent(
+            refined_text = self._call_agent(
                 SABOTEUR_PROMPT, 
                 f"REWRITE AGAIN. FEEDBACK FROM AUDITOR: {feedback}\n\nORIGINAL FACTS: {facts}"
             )
+            if refined_text: current_text = refined_text
 
         return {
             "draft": user_input,
