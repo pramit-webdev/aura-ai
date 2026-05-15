@@ -141,10 +141,12 @@ with container:
         
         for percent_complete in range(100):
             time.sleep(0.01)
-            if percent_complete == 30: my_bar.progress(percent_complete, text="Critic is identifying AI signatures...")
-            if percent_complete == 60: my_bar.progress(percent_complete, text="Humanizer is injecting burstiness and perplexity...")
-            if percent_complete == 90: my_bar.progress(percent_complete, text="Verifying output safety...")
-            my_bar.progress(percent_complete + 1, text=my_bar.empty())
+            msg = "Processing..."
+            if percent_complete < 30: msg = "Agents are analyzing linguistic patterns..."
+            elif percent_complete < 60: msg = "Critic is identifying AI signatures..."
+            elif percent_complete < 90: msg = "Humanizer is injecting burstiness and perplexity..."
+            else: msg = "Verifying output safety..."
+            my_bar.progress(percent_complete + 1, text=msg)
         
         results = agent.run_pipeline(user_input)
         my_bar.empty()
