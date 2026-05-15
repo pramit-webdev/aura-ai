@@ -12,6 +12,12 @@ import textstat
 import time
 import random
 
+# Initialize Session States
+if 'input_text' not in st.session_state:
+    st.session_state.input_text = ""
+if 'results' not in st.session_state:
+    st.session_state.results = None
+
 # Page Configuration
 st.set_page_config(
     page_title="Aura AI - Content Humanizer", 
@@ -125,7 +131,10 @@ with col1:
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.subheader("📝 Input Content")
     
-    user_input = st.text_area("Paste AI text OR enter a topic:", height=250, placeholder="Example: 'Write 100 words about the beauty of Kerala' or paste your ChatGPT output here...")
+    user_input = st.text_area("Paste AI text OR generate a draft:", 
+                             value=st.session_state.input_text,
+                             height=250, 
+                             placeholder="Paste ChatGPT output or click 'Stress Test'...")
     
     col_btn1, col_btn2 = st.columns(2)
     with col_btn1:
@@ -134,15 +143,19 @@ with col1:
         stress_btn = st.button("🎲 Stress Test (Random Topic)", use_container_width=True)
 
     if stress_btn:
-        topics = [
-            "The impact of Artificial Intelligence on job markets",
-            "Why Darjeeling tea is the best in the world",
-            "The historical significance of the Taj Mahal",
-            "Climate change and its effect on coastal cities",
-            "The benefits of a Mediterranean diet"
-        ]
-        user_input = f"Write a detailed 100-word paragraph about: {random.choice(topics)}"
-        run_btn = True # Trigger the run
+        with st.spinner("Drafting raw AI content..."):
+            topics = [
+                "The impact of Artificial Intelligence on job markets",
+                "Why Darjeeling tea is the best in the world",
+                "The historical significance of the Taj Mahal",
+                "Climate change and its effect on coastal cities",
+                "The benefits of a Mediterranean diet"
+            ]
+            topic = random.choice(topics)
+            # Use a simple prompt to generate RAW AI text
+            raw_draft = agent._call_agent("You are a robotic AI assistant. Write a 100-word paragraph in a standard, predictable AI style about the topic.", topic)
+            st.session_state.input_text = raw_draft
+            st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Run Pipeline
