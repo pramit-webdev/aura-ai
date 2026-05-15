@@ -10,6 +10,19 @@ class HumanizerAgent:
         self.model = "llama-3.3-70b-versatile"
         self.auditor = SOTAAuditor()
 
+    def _clean_output(self, text):
+        # Remove common AI preambles
+        lines = text.split('\n')
+        cleaned_lines = []
+        for line in lines:
+            # Skip lines that look like introductions
+            if line.strip().lower().startswith(('here is', 'revised', 'based on', 'sure', 'the following')):
+                continue
+            if line.strip().endswith(':'):
+                continue
+            cleaned_lines.append(line)
+        return '\n'.join(cleaned_lines).strip()
+
     def _call_agent(self, role_prompt, content):
         chat_completion = self.groq_client.chat.completions.create(
             messages=[
@@ -19,7 +32,8 @@ class HumanizerAgent:
             model=self.model,
             temperature=0.9,
         )
-        return chat_completion.choices[0].message.content
+        raw_text = chat_completion.choices[0].message.content
+        return self._clean_output(raw_text)
 
     def run_pipeline(self, user_input):
         print(f">>> STARTING PIPELINE for input: {user_input[:50]}...")
