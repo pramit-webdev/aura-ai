@@ -7,7 +7,7 @@ from auditor import SOTAAuditor
 from prompts import FACT_AGENT_PROMPT, SABOTEUR_PROMPT, AUDITOR_PROMPT
 
 class HumanizerAgent:
-    def __init__(self):
+    def __init__(self, provider="Groq"):
         self.groq_client = Groq(api_key=GROQ_API_KEY)
         genai.configure(api_key=GOOGLE_API_KEY)
         self.gemini_model = genai.GenerativeModel('gemini-2.0-flash')
