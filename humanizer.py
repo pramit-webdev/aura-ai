@@ -1,47 +1,70 @@
 import os
 import google.generativeai as genai
-from config import GOOGLE_API_KEY, DEFAULT_GEN_MODEL
-from prompts import DRAFTER_PROMPT, HUMANIZER_PROMPT
+from groq import Groq
+from config import GOOGLE_API_KEY, GROQ_API_KEY, DEFAULT_GEN_MODEL, GROQ_MODEL
+from prompts import DRAFTER_PROMPT, CRITIC_PROMPT, HUMANIZER_PROMPT
 
 class HumanizerAgent:
-    def __init__(self):
-        genai.configure(api_key=GOOGLE_API_KEY)
-        # We know this model works for your key
-        self.model_name = "gemini-2.5-flash" 
+    def __init__(self, provider="Gemini"):
+        self.provider = provider
+        if provider == "Gemini":
+            genai.configure(api_key=GOOGLE_API_KEY)
+            self.gemini_model = genai.GenerativeModel(
+                model_name=DEFAULT_GEN_MODEL,
+                safety_settings={'HATE': 'BLOCK_NONE', 'HARASSMENT': 'BLOCK_NONE', 'SEXUAL': 'BLOCK_NONE', 'DANGEROUS': 'BLOCK_NONE'}
+            )
+        elif provider == "Groq":
+            self.groq_client = Groq(api_key=GROQ_API_KEY)
+            self.groq_model = GROQ_MODEL
+
+    def _generate(self, system_instruction, user_content):
+        if self.provider == "Gemini":
+            # Gemini Single-Shot (to avoid filters)
+            full_prompt = f"{system_instruction}\n\n{user_content}"
+            response = self.gemini_model.generate_content(full_prompt)
+            return response.text
+        else:
+            # Groq Multi-Turn (much more powerful for reasoning)
+            chat_completion = self.groq_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_instruction},
+                    {"role": "user", "content": user_content},
+                ],
+                model=self.groq_model,
+            )
+            return chat_completion.choices[0].message.content
 
     def run_pipeline(self, user_input):
-        print(f"Running stable pipeline on {self.model_name}...")
+        print(f"Running pipeline on {self.provider}...")
         
         # Determine if input is a prompt or existing text
         is_paste = len(user_input.split()) > 50
         
-        if is_paste:
-            prompt = f"{HUMANIZER_PROMPT}\n\nText to humanize:\n{user_input}"
-        else:
-            prompt = f"{DRAFTER_PROMPT}\n\n{HUMANIZER_PROMPT}\n\nUser Goal: {user_input}"
-
-        try:
-            # Explicitly disable safety filters in the old SDK style
-            model = genai.GenerativeModel(
-                model_name=self.model_name,
-                safety_settings={
-                    'HATE': 'BLOCK_NONE',
-                    'HARASSMENT': 'BLOCK_NONE',
-                    'SEXUAL': 'BLOCK_NONE',
-                    'DANGEROUS': 'BLOCK_NONE'
-                }
-            )
-            response = model.generate_content(prompt)
-            output = response.text
+        if self.provider == "Gemini":
+            # Stay single-shot for Gemini to avoid 400 errors
+            if is_paste:
+                prompt = f"{HUMANIZER_PROMPT}\n\nText to humanize:\n{user_input}"
+            else:
+                prompt = f"{DRAFTER_PROMPT}\n\n{HUMANIZER_PROMPT}\n\nUser Goal: {user_input}"
             
+            output = self._generate("You are a Master Editor.", prompt)
             return {
-                "draft": "Consolidated into single-shot.",
-                "criticism": "Performed internally by single-shot agent.",
+                "draft": "Consolidated",
+                "criticism": "Performed internally",
                 "humanized": output
             }
-        except Exception as e:
+        else:
+            # Use the full Agentic Pipeline for Groq/Llama
+            if is_paste:
+                draft = user_input
+            else:
+                draft = self._generate(DRAFTER_PROMPT, user_input)
+            
+            criticism = self._generate(CRITIC_PROMPT, f"Audit this text:\n{draft}")
+            humanized = self._generate(HUMANIZER_PROMPT, f"Audit Notes:\n{criticism}\n\nOriginal Text:\n{draft}")
+            
             return {
-                "draft": "Error",
-                "criticism": str(e),
-                "humanized": f"The AI engine returned an error: {str(e)}. Please check your GOOGLE_API_KEY and model permissions."
+                "draft": draft,
+                "criticism": criticism,
+                "humanized": humanized
             }
