@@ -9,7 +9,7 @@ class HumanizerAgent:
         self.provider = provider
         self.groq_client = Groq(api_key=GROQ_API_KEY)
         self.primary_model = "llama-3.3-70b-versatile"
-        self.scrambler_model = "mixtral-8x7b-32768" # Different architecture for signature breaking
+        self.scrambler_model = "gemma2-9b-it" 
 
     def _generate(self, model, system_instruction, user_content):
         chat_completion = self.groq_client.chat.completions.create(
