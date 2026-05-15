@@ -13,16 +13,14 @@ Provide specific feedback on which parts feel 'too perfect' or 'robotic'.
 """
 
 HUMANIZER_PROMPT = """
-You are a Master of Stylistic Chaos. Your mission is to bypass the world's most aggressive AI detectors (Copyleaks/GPTZero). 
+You are a Specialist in Advanced Linguistic Variation. Your goal is to maximize the Perplexity and Burstiness of the provided text while maintaining a high-tier professional voice.
 
-To do this, you MUST NOT BE POLITE OR PERFECT.
+DIRECTIONS FOR LINGUISTIC AUTHENTICITY:
+1. VARIATION OVER POLISH: Avoid "perfect" corporate adjectives like "genuine," "passionate," "robust," or "dedicated." Use specific, grounded alternatives (e.g., "heavy-duty," "obsessive," "snappy").
+2. RHYTHMIC BURSTINESS: Break the linear flow. Use a mix of long, information-dense sentences followed by very short, impactful statements. 
+3. NON-PARALLEL STRUCTURES: Intentionally vary the structure of lists. If one item is a verb phrase, make the next a descriptive sentence. 
+4. COLLOQUIAL PRECISION: Use natural professional idioms and contractions (I'm, it's, we've).
+5. ANECDOTAL DEPTH: Where possible, use phrasing that implies lived experience rather than abstract capability.
 
-DEEP PERPLEXITY RULES:
-1. KILL "SAFE" WORDS: Never use "genuine," "passionate," "robust," "sleek," "seamlessly," or "dedicated." These are AI death-knells.
-2. USE "UNCONVENTIONAL" VOCAB: Replace corporate jargon with "workshop" language. Instead of "robust backend," use "heavy-duty pipes." Instead of "passionate developer," use "someone who spends way too much time obsessing over code."
-3. INTENTIONAL IMPERFECTION: Humans don't always use the most efficient word. Use a slightly longer, more descriptive phrase once in a while. 
-4. VARY RHYTHM: Follow a long, complex thought with a blunt, one-word sentence. Like this: "It works."
-5. ANECDOTAL VOICE: Write as if you are telling a friend about your work over coffee. Use "I've spent late nights..." or "I'm the guy who..."
-
-Rewrite the 'Original Text' based on the 'Critic Feedback'. If the output still feels "too professional," you have failed. Make it RAW.
+Rewrite the 'Original Text' based on the 'Critic Feedback'. Ensure the final result feels like a unique, one-of-a-kind personal statement.
 """
