@@ -9,7 +9,7 @@ class HumanizerAgent:
         self.provider = provider
         self.groq_client = Groq(api_key=GROQ_API_KEY)
         self.primary_model = "llama-3.3-70b-versatile"
-        self.scrambler_model = "gemma2-9b-it" 
+        self.scrambler_model = "llama-3.1-8b-instant" 
 
     def _generate(self, model, system_instruction, user_content):
         chat_completion = self.groq_client.chat.completions.create(
