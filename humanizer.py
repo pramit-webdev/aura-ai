@@ -46,12 +46,17 @@ class HumanizerAgent:
         # Phase 2: Gemini performs the Sabotage (Different architecture shift)
         current_text = self._call_gemini(SABOTEUR_PROMPT, f"FACTS:\n{facts}")
         
-        # Adversarial Loop
+        # Adversarial Loop (Optimized for speed)
         attempts = 0
-        while attempts < 3:
+        max_attempts = 2 
+        
+        while attempts < max_attempts:
             attempts += 1
             audit_report = self.auditor.audit(current_text)
-            if audit_report['detection_probability'] < 10:
+            print(f">>> AUDIT ATTEMPT {attempts}: Score {audit_report['detection_probability']}%")
+            
+            # 15% is the sweet spot for speed vs quality
+            if audit_report['detection_probability'] < 15:
                 break
             
             # Feedback from Llama (Brain A criticizing Brain B)

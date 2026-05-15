@@ -87,7 +87,11 @@ with st.sidebar:
         st.session_state.results = None
         st.rerun()
 
-agent = HumanizerAgent(provider=ai_engine)
+@st.cache_resource
+def get_agent(engine):
+    return HumanizerAgent(provider=engine)
+
+agent = get_agent(ai_engine)
 
 # Title
 st.markdown("<h1 style='text-align: center; font-size: 3.5rem;'>Aura AI</h1>", unsafe_allow_html=True)
