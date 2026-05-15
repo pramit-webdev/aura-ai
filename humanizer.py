@@ -13,6 +13,10 @@ class HumanizerAgent:
         self.gemini_model = genai.GenerativeModel('gemini-2.0-flash')
         self.auditor = SOTAAuditor()
 
+    def _call_agent(self, role_prompt, content):
+        # Alias for backward compatibility and drafting
+        return self._call_groq(role_prompt, content)
+
     def _call_groq(self, role_prompt, content):
         temp = random.uniform(0.85, 1.1)
         chat_completion = self.groq_client.chat.completions.create(
